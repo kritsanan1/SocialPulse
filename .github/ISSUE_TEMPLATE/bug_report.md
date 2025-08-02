@@ -38,10 +38,12 @@ If possible, provide a minimal code example or URL that demonstrates the issue.
 - Screen Resolution: [e.g. 1920x1080, 375x667]
 
 **Application Environment:**
-- Environment: [e.g. Development, Production]
+- Environment: [e.g. Development, Staging, Production]
 - Version/Commit: [e.g. v1.2.3, commit abc123]
-- Authentication State: [e.g. Logged in, Logged out]
+- Authentication State: [e.g. Logged in, Logged out, Social Login]
 - User Role: [e.g. Admin, Team Member, Basic User]
+- Subscription Plan: [e.g. Free Trial, Basic, Pro, Enterprise]
+- Connected Platforms: [e.g. Twitter, LinkedIn, Instagram, Facebook]
 
 ## 📸 Screenshots & Media
 
@@ -86,9 +88,13 @@ Include failed API requests, status codes, and response bodies
 - Are there workarounds available?
 
 **Business Impact:**
-- Does this affect revenue/payments?
-- Does this impact social media posting?
-- Does this affect user onboarding?
+- Does this affect revenue/payments/subscriptions?
+- Does this impact social media posting or scheduling?
+- Does this affect AI content generation?
+- Does this impact analytics or performance monitoring?
+- Does this affect user onboarding or authentication?
+- Does this break platform integrations (Twitter, LinkedIn, etc.)?
+- Does this impact team collaboration features?
 
 ## 💡 Suggested Solution
 
@@ -109,7 +115,28 @@ Before submitting, please ensure:
 
 ---
 
+**Feature-Specific Context:**
+- [ ] AI Content Generator
+- [ ] Social Media Scheduler  
+- [ ] Analytics Dashboard
+- [ ] Performance Monitor
+- [ ] Team Management
+- [ ] Billing/Subscription
+- [ ] Visual Content Creator
+- [ ] Sentiment Analysis
+- [ ] Competitor Intelligence
+- [ ] Content Recycling
+
+**Platform Integration Issues:**
+- [ ] Twitter API
+- [ ] LinkedIn API
+- [ ] Instagram API
+- [ ] Facebook API
+- [ ] Stripe Integration
+- [ ] Authentication Provider
+
 **For Internal Use:**
 - Priority: [ ] P0 | [ ] P1 | [ ] P2 | [ ] P3
-- Component: [ ] Frontend | [ ] Backend | [ ] Database | [ ] API
+- Component: [ ] Frontend | [ ] Backend | [ ] Database | [ ] API | [ ] AI Services
+- Team: [ ] Frontend | [ ] Backend | [ ] DevOps | [ ] AI/ML
 - Assignment: @username
