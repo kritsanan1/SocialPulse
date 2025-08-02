@@ -1,0 +1,94 @@
+# Project Name: Advanced AI Social Media Manager
+
+## Description
+A comprehensive web application leveraging AI to manage, schedule, and analyze social media posts, with enhanced features for content optimization and customizable analytics.
+
+## Primary Goals
+Integrate AI-driven content suggestions and post optimization, support customizable dashboards, and utilize machine learning to enhance posting strategies, ensuring a user-friendly, scalable application.
+
+----------------------------------------------------
+
+## Tech Stack & Environment
+
+**Frontend:** Vite + React + TypeScript + Tailwind CSS
+
+**Backend:** Supabase (PostgreSQL + Auth)
+
+**Target Platform:** Single-Page Application
+
+**Framework Versions & Config:** Latest stable versions
+
+----------------------------------------------------
+
+## Requirements & Features
+
+### Core Features:
+
+- AI-driven suggestions for content creation and optimization.
+- Automated post optimization using analytics insights.
+- Customizable dashboard for personalized metric displays.
+- Form for inputting post content, selecting platforms (Twitter, Facebook, Instagram, LinkedIn, TikTok, Pinterest, Snapchat), adding media URLs, and setting a schedule date.
+- Option to input a Profile Key for multi-user posting.
+- Display section for post history and analytics dashboard.
+- Collaborative tools for inviting team members and assigning roles.
+
+### User Flows
+- User logs in and accesses the main page.
+- User inputs post details, selects platforms, and schedules the post.
+- User receives AI-driven content suggestions and optimization tips.
+- User optionally adds a Profile Key and invites team members for collaboration.
+- User customizes the analytics dashboard to focus on key metrics.
+- User submits the form, and the post is saved and scheduled via Ayrshare API.
+- User views post history and analytics dashboard for performance tracking.
+
+### Business Rules
+- Posts should only be scheduled for future dates.
+- Each user and their invited team members should manage posts collaboratively without interference from other teams.
+- Analytics should be updated in real-time to reflect the latest performance metrics.
+- AI suggestions should be based on historical post data and current trends.
+
+----------------------------------------------------
+
+## UI/UX Design
+
+### Layout
+- Main page with a form on the left, post history and analytics dashboard on the right.
+- Separate section for team management and role assignments.
+
+### Look & Feel
+- Modern, responsive design with a blue-white color palette.
+- Consistent button styling using #3B82F6.
+- Intuitive dashboard with easy-to-read metrics and graphs.
+
+### Pages
+- Main page with form, post history, and analytics.
+- Team Management page for inviting members and assigning roles.
+- Customization page for dashboard settings.
+
+### Components
+- Post Input Form
+- AI Suggestion Panel
+- Platform Selector
+- Date Scheduler
+- Post History Display
+- Analytics Dashboard
+- Team Management Tool
+- Dashboard Customization Tool
+
+----------------------------------------------------
+
+## Data Model & Supabase Setup
+
+### Database Schema
+- Posts: id, content, platforms, media_url, schedule_date, profile_key, user_id
+- History: id, post_id, status, response, created_at
+- Analytics: id, post_id, engagement_rate, reach, impressions, last_updated
+- Teams: id, user_id, team_member_id, role
+- AI_Suggestions: id, post_id, suggestion_type, suggestion_content, created_at
+
+### Row-Level Security
+Enabled by default
+
+### Auth Requirements
+- Secure user authentication and authorization using Supabase Auth.
+- Role-based access control for team management.
