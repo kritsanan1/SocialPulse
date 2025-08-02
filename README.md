@@ -1,6 +1,10 @@
 
 # SocialAI Pro - Advanced AI Social Media Manager
 
+[![screencapture-b548dfde-05ba-4cad-8bc8-7f36ea5ceb6f-00-10cdmb93wl7wd-kirk-replit-dev-2025-08-02-22-27.png](https://i.postimg.cc/pVsz3vdp/screencapture-b548dfde-05ba-4cad-8bc8-7f36ea5ceb6f-00-10cdmb93wl7wd-kirk-replit-dev-2025-08-02-22-27.png)](https://postimg.cc/RqnWnjKB)
+[![screencapture-b548dfde-05ba-4cad-8bc8-7f36ea5ceb6f-00-10cdmb93wl7wd-kirk-replit-dev-ai-insights-2025.png](https://i.postimg.cc/HL1ybs6P/screencapture-b548dfde-05ba-4cad-8bc8-7f36ea5ceb6f-00-10cdmb93wl7wd-kirk-replit-dev-ai-insights-2025.png)](https://postimg.cc/DS50TFkq)
+
+
 [![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 [![React](https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)](https://reactjs.org/)
 [![Node.js](https://img.shields.io/badge/Node.js-43853D?style=for-the-badge&logo=node.js&logoColor=white)](https://nodejs.org/)
@@ -370,6 +374,9 @@ For technical support or questions:
 - Create an issue in the repository
 - Contact the development team
 - Refer to the troubleshooting documentation
+
+[![screencapture-b548dfde-05ba-4cad-8bc8-7f36ea5ceb6f-00-10cdmb93wl7wd-kirk-replit-dev-team-2025-08-02.png](https://i.postimg.cc/ZKg3KLpm/screencapture-b548dfde-05ba-4cad-8bc8-7f36ea5ceb6f-00-10cdmb93wl7wd-kirk-replit-dev-team-2025-08-02.png)](https://postimg.cc/crR6FwFk)
+[![screencapture-b548dfde-05ba-4cad-8bc8-7f36ea5ceb6f-00-10cdmb93wl7wd-kirk-replit-dev-visual-content-c.png](https://i.postimg.cc/154wQdgM/screencapture-b548dfde-05ba-4cad-8bc8-7f36ea5ceb6f-00-10cdmb93wl7wd-kirk-replit-dev-visual-content-c.png)](https://postimg.cc/XpSpKQky)
 
 ---
 
