@@ -69,40 +69,40 @@ export function PerformanceMonitor() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
-            <div className="p-4 border rounded-lg">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 mb-6">
+            <div className="p-3 sm:p-4 border rounded-lg">
               <div className="flex items-center gap-2 mb-2">
                 <Eye className="h-4 w-4" />
-                <span className="text-sm font-medium">First Contentful Paint</span>
+                <span className="text-xs sm:text-sm font-medium">First Contentful Paint</span>
               </div>
-              <div className="text-2xl font-bold">{Math.round(webVitals.fcp)}ms</div>
+              <div className="text-xl sm:text-2xl font-bold">{Math.round(webVitals.fcp)}ms</div>
               {getScoreBadge(webVitals.fcp < 1800 ? 90 : webVitals.fcp < 3000 ? 50 : 0)}
             </div>
 
-            <div className="p-4 border rounded-lg">
+            <div className="p-3 sm:p-4 border rounded-lg">
               <div className="flex items-center gap-2 mb-2">
                 <Zap className="h-4 w-4" />
-                <span className="text-sm font-medium">Largest Contentful Paint</span>
+                <span className="text-xs sm:text-sm font-medium">Largest Contentful Paint</span>
               </div>
-              <div className="text-2xl font-bold">{Math.round(webVitals.lcp)}ms</div>
+              <div className="text-xl sm:text-2xl font-bold">{Math.round(webVitals.lcp)}ms</div>
               {getScoreBadge(webVitals.lcp < 2500 ? 90 : webVitals.lcp < 4000 ? 50 : 0)}
             </div>
 
-            <div className="p-4 border rounded-lg">
+            <div className="p-3 sm:p-4 border rounded-lg">
               <div className="flex items-center gap-2 mb-2">
                 <MousePointer className="h-4 w-4" />
-                <span className="text-sm font-medium">First Input Delay</span>
+                <span className="text-xs sm:text-sm font-medium">First Input Delay</span>
               </div>
-              <div className="text-2xl font-bold">{Math.round(webVitals.fid)}ms</div>
+              <div className="text-xl sm:text-2xl font-bold">{Math.round(webVitals.fid)}ms</div>
               {getScoreBadge(webVitals.fid < 100 ? 90 : webVitals.fid < 300 ? 50 : 0)}
             </div>
 
-            <div className="p-4 border rounded-lg">
+            <div className="p-3 sm:p-4 border rounded-lg">
               <div className="flex items-center gap-2 mb-2">
                 <Activity className="h-4 w-4" />
-                <span className="text-sm font-medium">Cumulative Layout Shift</span>
+                <span className="text-xs sm:text-sm font-medium">Cumulative Layout Shift</span>
               </div>
-              <div className="text-2xl font-bold">{webVitals.cls.toFixed(3)}</div>
+              <div className="text-xl sm:text-2xl font-bold">{webVitals.cls.toFixed(3)}</div>
               {getScoreBadge(webVitals.cls < 0.1 ? 90 : webVitals.cls < 0.25 ? 50 : 0)}
             </div>
 
