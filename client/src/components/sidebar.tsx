@@ -14,7 +14,9 @@ import {
   CreditCard,
   DollarSign,
   Sparkles,
-  Image
+  Image,
+  RefreshCw,
+  Heart
 } from "lucide-react";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
 
@@ -72,39 +74,73 @@ export function Sidebar() {
             </Link>
           );
         })}
-        <Link href="/ai-insights">
-              <div className={cn(
-                  "flex items-center space-x-3 px-4 py-3 rounded-lg font-medium transition-colors cursor-pointer",
-                   location === "/ai-insights"
-                    ? "text-blue-600 bg-blue-50 dark:text-blue-400 dark:bg-blue-900"
-                    : "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
-                )}>
-                <Lightbulb className="w-5 h-5" />
-                <span>AI Insights</span>
-              </div>
-            </Link>
-        <Link href="/ai-content-generator">
-              <div className={cn(
-                  "flex items-center space-x-3 px-4 py-3 rounded-lg font-medium transition-colors cursor-pointer",
-                   location === "/ai-content-generator"
-                    ? "text-blue-600 bg-blue-50 dark:text-blue-400 dark:bg-blue-900"
-                    : "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
-                )}>
-                <Sparkles className="w-5 h-5" />
-                <span>AI Content Generator</span>
-              </div>
-            </Link>
-            <Link href="/visual-content-creator">
-              <div className={cn(
-                  "flex items-center space-x-3 px-4 py-3 rounded-lg font-medium transition-colors cursor-pointer",
-                   location === "/visual-content-creator"
-                    ? "text-blue-600 bg-blue-50 dark:text-blue-400 dark:bg-blue-900"
-                    : "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
-                )}>
-                <Image className="w-5 h-5" />
-                <span>Visual Creator</span>
-              </div>
-            </Link>
+        <div className="flex items-center space-x-2 p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
+        <Link href="/" className="flex items-center space-x-2 w-full">
+          <Home className="w-5 h-5" />
+          <span>Dashboard</span>
+        </Link>
+      </div>
+        <div className="flex items-center space-x-2 p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
+        <Link href="/calendar" className="flex items-center space-x-2 w-full">
+          <Calendar className="w-5 h-5" />
+          <span>Calendar</span>
+        </Link>
+      </div>
+
+      <div className="flex items-center space-x-2 p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
+        <Link href="/team" className="flex items-center space-x-2 w-full">
+          <Users className="w-5 h-5" />
+          <span>Team</span>
+        </Link>
+      </div>
+
+      <div className="flex items-center space-x-2 p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
+        <Link href="/ai-insights" className="flex items-center space-x-2 w-full">
+          <BarChart3 className="w-5 h-5" />
+          <span>AI Insights</span>
+        </Link>
+      </div>
+
+      <div className="flex items-center space-x-2 p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
+        <Link href="/ai-content-generator" className="flex items-center space-x-2 w-full">
+          <Sparkles className="w-5 h-5" />
+          <span>AI Content Generator</span>
+        </Link>
+      </div>
+
+      <div className="flex items-center space-x-2 p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
+        <Link href="/visual-content-creator" className="flex items-center space-x-2 w-full">
+          <Image className="w-5 h-5" />
+          <span>Visual Creator</span>
+        </Link>
+      </div>
+
+      <div className="flex items-center space-x-2 p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
+        <Link href="/content-recycling" className="flex items-center space-x-2 w-full">
+          <RefreshCw className="w-5 h-5" />
+          <span>Content Recycling</span>
+        </Link>
+      </div>
+
+      <div className="flex items-center space-x-2 p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
+        <Link href="/sentiment-dashboard" className="flex items-center space-x-2 w-full">
+          <Heart className="w-5 h-5" />
+          <span>Sentiment Analysis</span>
+        </Link>
+      </div>
+        <div className="flex items-center space-x-2 p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
+          <Link href="/pricing" className="flex items-center space-x-2 w-full">
+            <CreditCard className="w-5 h-5" />
+            <span>Pricing</span>
+          </Link>
+        </div>
+
+        <div className="flex items-center space-x-2 p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
+          <Link href="/billing" className="flex items-center space-x-2 w-full">
+            <CheckCircle className="w-5 h-5" />
+            <span>Billing</span>
+          </Link>
+        </div>
       </nav>
 
       {/* User Profile */}

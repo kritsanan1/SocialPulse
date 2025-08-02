@@ -7,14 +7,16 @@ import { ThemeProvider } from "@/components/theme-provider";
 import { useAuth } from "@/hooks/useAuth";
 import Home from "./pages/home";
 import CalendarPage from "./pages/calendar";
-import AIInsightsPage from "./pages/ai-insights";
+import AIInsightsPage from "@/pages/ai-insights";
+import AIContentGenerator from "@/pages/ai-content-generator";
+import VisualContentCreator from "@/pages/visual-content-creator";
+import ContentRecycling from "@/pages/content-recycling";
+import SentimentDashboard from "@/pages/sentiment-dashboard";
 import TeamManagement from "./pages/team-management";
 import Landing from "./pages/landing";
 import Pricing from "./pages/pricing";
 import Billing from "./pages/billing";
 import Success from "./pages/success";
-import AIContentGenerator from "./pages/ai-content-generator";
-import VisualContentCreator from "./pages/visual-content-creator";
 import NotFound from "./pages/not-found";
 
 function Router() {

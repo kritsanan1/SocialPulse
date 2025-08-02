@@ -366,7 +366,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   const httpServer = createServer(app);
-  // Register advanced features
+  // Register feature routes
   try {
     const { registerAdvancedFeatures } = require("./routes/advanced-features");
     registerAdvancedFeatures(app);
@@ -453,3 +453,20 @@ async function generateAISuggestions(userId: string, content: string): Promise<A
 
   return suggestions;
 }
+import { registerAIContentRoutes } from "./routes/ai-content.js";
+import { registerAdvancedFeatures } from "./routes/advanced-features.js";
+import { registerStripeRoutes } from "./routes/stripe.js";
+import { registerContentRecyclingRoutes } from "./routes/content-recycling.js";
+import { registerSentimentAnalysisRoutes } from "./routes/sentiment-analysis.js";
+import { registerCompetitorIntelligenceRoutes } from "./routes/competitor-intelligence.js";
+import { registerAutoPilotRoutes } from "./routes/autopilot.js";
+import { registerAdvancedAnalyticsRoutes } from "./routes/advanced-analytics.js";
+// Register feature routes
+registerAIContentRoutes(app);
+registerAdvancedFeatures(app);
+registerStripeRoutes(app);
+registerContentRecyclingRoutes(app);
+registerSentimentAnalysisRoutes(app);
+registerCompetitorIntelligenceRoutes(app);
+registerAutoPilotRoutes(app);
+registerAdvancedAnalyticsRoutes(app);
