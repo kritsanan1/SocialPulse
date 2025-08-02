@@ -2,37 +2,47 @@ import { useAuth } from "@/hooks/useAuth";
 import { Link, useLocation } from "wouter";
 import { cn } from "@/lib/utils";
 import { 
+  Home,
+  PlusCircle,
   BarChart3, 
   Users, 
   Lightbulb, 
   Settings, 
   LogOut,
-  Zap
+  Zap,
+  Calendar
 } from "lucide-react";
+import { ThemeToggle } from "@/components/ui/theme-toggle";
 
 export function Sidebar() {
   const { user } = useAuth();
   const [location] = useLocation();
 
   const navigation = [
-    { name: "Dashboard", href: "/", icon: BarChart3, current: location === "/" },
+    { name: "Dashboard", href: "/", icon: Home, current: location === "/" },
+    { name: "Create Post", href: "/create", icon: PlusCircle, current: location === "/create" },
+    { name: "Analytics", href: "/analytics", icon: BarChart3, current: location === "/analytics" },
+    { name: "Calendar", href: "/calendar", icon: Calendar, current: location === "/calendar" },
+    { name: "AI Insights", href: "/ai-insights", icon: Lightbulb, current: location === "/ai-insights" },
     { name: "Team Management", href: "/team", icon: Users, current: location === "/team" },
-    { name: "AI Insights", href: "/insights", icon: Lightbulb, current: location === "/insights" },
     { name: "Settings", href: "/settings", icon: Settings, current: location === "/settings" },
   ];
 
   return (
-    <div className="w-64 bg-white border-r border-gray-200 flex flex-col">
+    <div className="w-64 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 flex flex-col">
       {/* Logo and Branding */}
-      <div className="p-6 border-b border-gray-200">
-        <div className="flex items-center space-x-3">
-          <div className="w-10 h-10 bg-gradient-to-br from-primary to-secondary rounded-xl flex items-center justify-center">
-            <Zap className="w-6 h-6 text-white" />
+      <div className="p-6 border-b border-gray-200 dark:border-gray-700">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center space-x-3">
+            <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl flex items-center justify-center">
+              <Zap className="w-6 h-6 text-white" />
+            </div>
+            <div>
+              <h1 className="text-xl font-bold text-gray-900 dark:text-white">SocialAI Pro</h1>
+              <p className="text-sm text-gray-500 dark:text-gray-400">AI-Powered Manager</p>
+            </div>
           </div>
-          <div>
-            <h1 className="text-xl font-bold text-gray-900">SocialAI Pro</h1>
-            <p className="text-sm text-gray-500">AI-Powered Manager</p>
-          </div>
+          <ThemeToggle />
         </div>
       </div>
 
@@ -42,17 +52,17 @@ export function Sidebar() {
           const Icon = item.icon;
           return (
             <Link key={item.name} href={item.href}>
-              <a
+              <div
                 className={cn(
-                  "flex items-center space-x-3 px-4 py-3 rounded-lg font-medium transition-colors",
+                  "flex items-center space-x-3 px-4 py-3 rounded-lg font-medium transition-colors cursor-pointer",
                   item.current
-                    ? "text-primary bg-blue-50"
-                    : "text-gray-700 hover:bg-gray-100"
+                    ? "text-blue-600 bg-blue-50 dark:text-blue-400 dark:bg-blue-900"
+                    : "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
                 )}
               >
                 <Icon className="w-5 h-5" />
                 <span>{item.name}</span>
-              </a>
+              </div>
             </Link>
           );
         })}

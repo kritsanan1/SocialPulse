@@ -359,6 +359,30 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   const httpServer = createServer(app);
+  // Register advanced features
+  try {
+    const { registerAdvancedFeatures } = require("./routes/advanced-features");
+    registerAdvancedFeatures(app);
+  } catch (error) {
+    console.log("Advanced features not available");
+  }
+
+  // Schedule cleanup endpoint
+  app.get("/api/posts/scheduled", isAuthenticated, async (req, res) => {
+    try {
+      const posts = await storage.getPostsByUser(req.user?.claims?.sub);
+      const scheduledPosts = posts.filter(post => 
+        post.status === 'scheduled' && 
+        post.scheduledDate && 
+        new Date(post.scheduledDate) > new Date()
+      );
+      res.json(scheduledPosts);
+    } catch (error) {
+      console.error("Error fetching scheduled posts:", error);
+      res.status(500).json({ message: "Failed to fetch scheduled posts" });
+    }
+  });
+
   return httpServer;
 }
 
