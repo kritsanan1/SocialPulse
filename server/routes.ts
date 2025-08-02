@@ -57,6 +57,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       const post = await storage.createPost({ ...postData, userId });
       
+      // Track usage
+      await storage.incrementUsage(userId, 'posts');
+      
       // Here you would integrate with Ayrshare API
       // For now, we'll simulate the API call
       try {
@@ -164,6 +167,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const userId = req.user.claims.sub;
       const teamData = insertTeamSchema.parse(req.body);
       const team = await storage.createTeamMember({ ...teamData, userId });
+      
+      // Track usage
+      await storage.incrementUsage(userId, 'teamMembers');
+      
       res.json(team);
     } catch (error) {
       console.error("Error creating team member:", error);
@@ -365,6 +372,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
     registerAdvancedFeatures(app);
   } catch (error) {
     console.log("Advanced features not available");
+  }
+
+  // Register Stripe routes
+  try {
+    const { registerStripeRoutes } = require("./routes/stripe");
+    registerStripeRoutes(app);
+  } catch (error) {
+    console.log("Stripe features not available");
   }
 
   // Schedule cleanup endpoint

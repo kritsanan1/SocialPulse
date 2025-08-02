@@ -5,15 +5,18 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { ThemeProvider } from "@/components/theme-provider";
 import { useAuth } from "@/hooks/useAuth";
-import Landing from "@/pages/landing";
-import Home from "@/pages/home";
-import TeamManagement from "@/pages/team-management";
-import NotFound from "@/pages/not-found";
-import CalendarPage from "@/pages/calendar";
-import AIInsightsPage from "@/pages/ai-insights";
+import Home from "./pages/home";
+import CalendarPage from "./pages/calendar";
+import AIInsightsPage from "./pages/ai-insights";
+import TeamManagement from "./pages/team-management";
+import Landing from "./pages/landing";
+import Pricing from "./pages/pricing";
+import Billing from "./pages/billing";
+import Success from "./pages/success";
+import NotFound from "./pages/not-found";
 
 function Router() {
-  const { isAuthenticated, isLoading } = useAuth();
+  const { isAuthenticated, isLoading, user } = useAuth();
 
   return (
     <Switch>
@@ -25,6 +28,9 @@ function Router() {
           <Route path="/team" component={TeamManagement} />
           <Route path="/calendar" component={CalendarPage} />
           <Route path="/ai-insights" component={AIInsightsPage} />
+          <Route path="/pricing" component={Pricing} />
+          <Route path="/billing" component={Billing} />
+          <Route path="/success" component={Success} />
         </>
       )}
       <Route component={NotFound} />

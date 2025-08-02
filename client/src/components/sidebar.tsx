@@ -10,7 +10,9 @@ import {
   Settings, 
   LogOut,
   Zap,
-  Calendar
+  Calendar,
+  CreditCard,
+  DollarSign
 } from "lucide-react";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
 
@@ -25,6 +27,8 @@ export function Sidebar() {
     { name: "Calendar", href: "/calendar", icon: Calendar, current: location === "/calendar" },
     { name: "AI Insights", href: "/ai-insights", icon: Lightbulb, current: location === "/ai-insights" },
     { name: "Team Management", href: "/team", icon: Users, current: location === "/team" },
+    { name: "Billing", href: "/billing", icon: CreditCard, current: location === "/billing" },
+    { name: "Pricing", href: "/pricing", icon: DollarSign, current: location === "/pricing" },
     { name: "Settings", href: "/settings", icon: Settings, current: location === "/settings" },
   ];
 
@@ -87,7 +91,7 @@ export function Sidebar() {
             <p className="text-xs text-gray-500 truncate">{user?.email}</p>
           </div>
         </div>
-        
+
         <button
           onClick={() => window.location.href = "/api/logout"}
           className="flex items-center space-x-2 w-full px-3 py-2 text-left text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"

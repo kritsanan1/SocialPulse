@@ -16,6 +16,12 @@ import {
   type InsertTeam,
   type AiSuggestion,
   type InsertAiSuggestion,
+  subscriptions,
+  billingHistory,
+  usageTracking,
+  type InsertSubscription,
+  type InsertBillingHistory,
+  type InsertUsageTracking,
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc, and, sql } from "drizzle-orm";
@@ -24,16 +30,16 @@ export interface IStorage {
   // User operations (mandatory for Replit Auth)
   getUser(id: string): Promise<User | undefined>;
   upsertUser(user: UpsertUser): Promise<User>;
-  
+
   // Post operations
   createPost(post: InsertPost & { userId: string }): Promise<Post>;
   getUserPosts(userId: string): Promise<Post[]>;
   getPost(id: string): Promise<Post | undefined>;
   updatePostStatus(id: string, status: string): Promise<void>;
-  
+
   // Post history operations
   createPostHistory(history: { postId: string; status: string; response: any }): Promise<PostHistory>;
-  
+
   // Analytics operations
   createAnalytics(analytics: InsertAnalytics): Promise<Analytics>;
   getPostAnalytics(postId: string): Promise<Analytics[]>;
@@ -43,15 +49,31 @@ export interface IStorage {
     totalReach: number;
     avgClickRate: string;
   }>;
-  
+
   // Team operations
   createTeamMember(team: InsertTeam): Promise<Team>;
   getUserTeamMembers(userId: string): Promise<Team[]>;
-  
+
   // AI Suggestions operations
   createAiSuggestion(suggestion: InsertAiSuggestion & { userId: string }): Promise<AiSuggestion>;
   getUserAiSuggestions(userId: string): Promise<AiSuggestion[]>;
   markSuggestionApplied(id: string): Promise<void>;
+
+    // Subscription methods
+    createSubscription(subscription: InsertSubscription): Promise<InsertSubscription>;
+    getSubscriptionByUserId(userId: string): Promise<InsertSubscription | undefined>;
+    getSubscriptionByStripeId(stripeSubscriptionId: string): Promise<InsertSubscription | undefined>;
+    updateSubscription(subscriptionId: string, updates: Partial<InsertSubscription>): Promise<InsertSubscription | undefined>;
+    updateSubscriptionByStripeId(stripeSubscriptionId: string, updates: Partial<InsertSubscription>): Promise<InsertSubscription | undefined>;
+
+    // Billing history methods
+    createBillingRecord(billing: InsertBillingHistory): Promise<InsertBillingHistory>;
+    getBillingHistory(userId: string): Promise<InsertBillingHistory[]>;
+
+    // Usage tracking methods
+    getOrCreateUsageTracking(userId: string, month: string): Promise<InsertUsageTracking>;
+    updateUsageTracking(userId: string, month: string, updates: Partial<InsertUsageTracking>): Promise<InsertUsageTracking | undefined>;
+    incrementUsage(userId: string, type: 'posts' | 'accounts' | 'teamMembers' | 'aiGenerations', amount?: number): Promise<void>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -142,7 +164,7 @@ export class DatabaseStorage implements IStorage {
     }
 
     const postIds = userPosts.map(p => p.id);
-    
+
     const analyticsData = await db
       .select({
         avgEngagement: sql<string>`AVG(${analytics.engagementRate})::text`,
@@ -214,6 +236,107 @@ export class DatabaseStorage implements IStorage {
       .values(historyData)
       .returning();
     return history;
+  }
+
+  // Subscription methods
+  async createSubscription(subscription: InsertSubscription): Promise<InsertSubscription> {
+    const [created] = await db.insert(subscriptions).values(subscription).returning();
+    return created;
+  }
+
+  async getSubscriptionByUserId(userId: string): Promise<InsertSubscription | undefined> {
+    const [subscription] = await db.select()
+      .from(subscriptions)
+      .where(eq(subscriptions.userId, userId))
+      .orderBy(desc(subscriptions.createdAt))
+      .limit(1);
+    return subscription;
+  }
+
+  async getSubscriptionByStripeId(stripeSubscriptionId: string): Promise<InsertSubscription | undefined> {
+    const [subscription] = await db.select()
+      .from(subscriptions)
+      .where(eq(subscriptions.stripeSubscriptionId, stripeSubscriptionId));
+    return subscription;
+  }
+
+  async updateSubscription(subscriptionId: string, updates: Partial<InsertSubscription>): Promise<InsertSubscription | undefined> {
+    const [updated] = await db.update(subscriptions)
+      .set({ ...updates, updatedAt: new Date() })
+      .where(eq(subscriptions.id, subscriptionId))
+      .returning();
+    return updated;
+  }
+
+  async updateSubscriptionByStripeId(stripeSubscriptionId: string, updates: Partial<InsertSubscription>): Promise<InsertSubscription | undefined> {
+    const [updated] = await db.update(subscriptions)
+      .set({ ...updates, updatedAt: new Date() })
+      .where(eq(subscriptions.stripeSubscriptionId, stripeSubscriptionId))
+      .returning();
+    return updated;
+  }
+
+  // Billing history methods
+  async createBillingRecord(billing: InsertBillingHistory): Promise<InsertBillingHistory> {
+    const [created] = await db.insert(billingHistory).values(billing).returning();
+    return created;
+  }
+
+  async getBillingHistory(userId: string): Promise<InsertBillingHistory[]> {
+    return await db.select()
+      .from(billingHistory)
+      .where(eq(billingHistory.userId, userId))
+      .orderBy(desc(billingHistory.createdAt));
+  }
+
+  // Usage tracking methods
+  async getOrCreateUsageTracking(userId: string, month: string): Promise<InsertUsageTracking> {
+    const [existing] = await db.select()
+      .from(usageTracking)
+      .where(and(
+        eq(usageTracking.userId, userId),
+        eq(usageTracking.month, month)
+      ));
+
+    if (existing) {
+      return existing;
+    }
+
+    const subscription = await this.getSubscriptionByUserId(userId);
+    const [created] = await db.insert(usageTracking).values({
+      userId,
+      subscriptionId: subscription?.id || null,
+      month,
+    }).returning();
+    return created;
+  }
+
+  async updateUsageTracking(userId: string, month: string, updates: Partial<InsertUsageTracking>): Promise<InsertUsageTracking | undefined> {
+    const [updated] = await db.update(usageTracking)
+      .set({ ...updates, updatedAt: new Date() })
+      .where(and(
+        eq(usageTracking.userId, userId),
+        eq(usageTracking.month, month)
+      ))
+      .returning();
+    return updated;
+  }
+
+  async incrementUsage(userId: string, type: 'posts' | 'accounts' | 'teamMembers' | 'aiGenerations', amount: number = 1): Promise<void> {
+    const month = new Date().toISOString().slice(0, 7); // YYYY-MM
+    const usage = await this.getOrCreateUsageTracking(userId, month);
+
+    const updateField = {
+      posts: 'postsCreated',
+      accounts: 'accountsConnected',
+      teamMembers: 'teamMembersAdded',
+      aiGenerations: 'aiGenerationsUsed'
+    }[type];
+
+    const currentValue = usage[updateField] || 0;
+    await this.updateUsageTracking(userId, month, {
+      [updateField]: currentValue + amount
+    });
   }
 }
 

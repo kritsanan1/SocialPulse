@@ -92,6 +92,50 @@ export const aiSuggestions = pgTable("ai_suggestions", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
+// Subscriptions table
+export const subscriptions = pgTable("subscriptions", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").references(() => users.id).notNull(),
+  stripeCustomerId: varchar("stripe_customer_id").unique(),
+  stripeSubscriptionId: varchar("stripe_subscription_id").unique(),
+  stripePriceId: varchar("stripe_price_id").notNull(),
+  plan: varchar("plan").notNull(), // basic, pro, enterprise
+  status: varchar("status").notNull().default("active"), // active, canceled, past_due, incomplete
+  currentPeriodStart: timestamp("current_period_start"),
+  currentPeriodEnd: timestamp("current_period_end"),
+  cancelAtPeriodEnd: boolean("cancel_at_period_end").default(false),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// Billing history table
+export const billingHistory = pgTable("billing_history", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").references(() => users.id).notNull(),
+  subscriptionId: varchar("subscription_id").references(() => subscriptions.id),
+  stripeInvoiceId: varchar("stripe_invoice_id"),
+  amount: decimal("amount", { precision: 10, scale: 2 }).notNull(),
+  currency: varchar("currency").notNull().default("usd"),
+  status: varchar("status").notNull(), // paid, pending, failed
+  description: text("description"),
+  invoiceUrl: varchar("invoice_url"),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+// Usage tracking table
+export const usageTracking = pgTable("usage_tracking", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").references(() => users.id).notNull(),
+  subscriptionId: varchar("subscription_id").references(() => subscriptions.id),
+  month: varchar("month").notNull(), // YYYY-MM format
+  postsCreated: integer("posts_created").default(0),
+  accountsConnected: integer("accounts_connected").default(0),
+  teamMembersAdded: integer("team_members_added").default(0),
+  aiGenerationsUsed: integer("ai_generations_used").default(0),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
 // Schema types
 export type UpsertUser = typeof users.$inferInsert;
 export type User = typeof users.$inferSelect;
@@ -120,12 +164,35 @@ export const insertAiSuggestionSchema = createInsertSchema(aiSuggestions).omit({
   createdAt: true,
 });
 
+export const insertSubscriptionSchema = createInsertSchema(subscriptions).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export const insertBillingHistorySchema = createInsertSchema(billingHistory).omit({
+  id: true,
+  createdAt: true,
+});
+
+export const insertUsageTrackingSchema = createInsertSchema(usageTracking).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
 export type InsertPost = z.infer<typeof insertPostSchema>;
 export type Post = typeof posts.$inferSelect;
 export type PostHistory = typeof postHistory.$inferSelect;
 export type Analytics = typeof analytics.$inferSelect;
 export type Team = typeof teams.$inferSelect;
 export type AiSuggestion = typeof aiSuggestions.$inferSelect;
+export type Subscription = typeof subscriptions.$inferSelect;
+export type BillingHistory = typeof billingHistory.$inferSelect;
+export type UsageTracking = typeof usageTracking.$inferSelect;
 export type InsertAnalytics = z.infer<typeof insertAnalyticsSchema>;
 export type InsertTeam = z.infer<typeof insertTeamSchema>;
 export type InsertAiSuggestion = z.infer<typeof insertAiSuggestionSchema>;
+export type InsertSubscription = z.infer<typeof insertSubscriptionSchema>;
+export type InsertBillingHistory = z.infer<typeof insertBillingHistorySchema>;
+export type InsertUsageTracking = z.infer<typeof insertUsageTrackingSchema>;
