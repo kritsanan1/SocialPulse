@@ -3,7 +3,29 @@ import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { setupAuth, isAuthenticated } from "./replitAuth";
 import { insertPostSchema, insertAnalyticsSchema, insertTeamSchema, insertAiSuggestionSchema } from "@shared/schema";
+import { ayrshareClient, AyrshareClient } from "./ayrshare";
+import multer from "multer";
 import { z } from "zod";
+
+// Configure multer for file uploads
+const upload = multer({
+  storage: multer.memoryStorage(),
+  limits: {
+    fileSize: 50 * 1024 * 1024, // 50MB limit
+  },
+  fileFilter: (req, file, cb) => {
+    // Accept images and videos
+    const allowedMimes = [
+      'image/jpeg', 'image/png', 'image/gif', 'image/webp',
+      'video/mp4', 'video/avi', 'video/mov', 'video/wmv'
+    ];
+    if (allowedMimes.includes(file.mimetype)) {
+      cb(null, true);
+    } else {
+      cb(new Error('Invalid file type. Only images and videos are allowed.'));
+    }
+  }
+});
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Auth middleware
@@ -157,6 +179,182 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error fetching team members:", error);
       res.status(500).json({ message: "Failed to fetch team members" });
+    }
+  });
+
+  // Ayrshare API Routes
+
+  // POST /api/ayrshare/post - Send post to Ayrshare
+  app.post('/api/ayrshare/post', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      
+      // Validate required fields
+      const { post, platforms, mediaUrls, scheduleDate, profileKey } = req.body;
+      
+      if (!post || !platforms || !Array.isArray(platforms) || platforms.length === 0) {
+        return res.status(400).json({ 
+          message: "Post content and platforms array are required" 
+        });
+      }
+
+      // Validate platforms
+      if (!AyrshareClient.validatePlatforms(platforms)) {
+        return res.status(400).json({ 
+          message: "Invalid platform(s). Supported platforms: twitter, facebook, instagram, linkedin, tiktok, pinterest, snapchat, youtube, reddit, telegram, threads, bluesky, google" 
+        });
+      }
+
+      // Validate media URLs if provided
+      if (mediaUrls && Array.isArray(mediaUrls) && mediaUrls.length > 0) {
+        if (!AyrshareClient.validateMediaUrls(mediaUrls)) {
+          return res.status(400).json({ 
+            message: "All media URLs must use HTTPS protocol" 
+          });
+        }
+      }
+
+      // Validate schedule date if provided
+      if (scheduleDate && !AyrshareClient.validateScheduleDate(scheduleDate)) {
+        return res.status(400).json({ 
+          message: "Schedule date must be in the future" 
+        });
+      }
+
+      // Check if Ayrshare API key is configured
+      if (!process.env.AYRSHARE_API_KEY) {
+        return res.status(500).json({ 
+          message: "Ayrshare API key not configured. Please add AYRSHARE_API_KEY to environment variables." 
+        });
+      }
+
+      // Prepare Ayrshare request
+      const ayrshareData = {
+        post,
+        platforms,
+        ...(mediaUrls && mediaUrls.length > 0 && { mediaUrls }),
+        ...(scheduleDate && { scheduleDate }),
+        ...(profileKey && { profileKey })
+      };
+
+      // Send to Ayrshare
+      const ayrshareResponse = await ayrshareClient.post(ayrshareData);
+
+      // Save post to database
+      const postData = {
+        content: post,
+        platforms,
+        mediaUrl: mediaUrls?.[0] || null,
+        scheduleDate: new Date(scheduleDate || new Date()),
+        profileKey: profileKey || null,
+        userId,
+        status: ayrshareResponse.status === 'success' ? 'scheduled' : 'failed'
+      };
+
+      const savedPost = await storage.createPost(postData);
+
+      // Save post history
+      await storage.createPostHistory({
+        postId: savedPost.id,
+        status: ayrshareResponse.status || 'unknown',
+        response: ayrshareResponse,
+      });
+
+      res.json({
+        success: true,
+        post: savedPost,
+        ayrshareResponse
+      });
+
+    } catch (error: any) {
+      console.error("Ayrshare post error:", error);
+      res.status(500).json({ 
+        message: error.message || "Failed to send post to Ayrshare" 
+      });
+    }
+  });
+
+  // GET /api/ayrshare/history - Get post history from Ayrshare
+  app.get('/api/ayrshare/history', isAuthenticated, async (req: any, res) => {
+    try {
+      const { profileKey } = req.query;
+
+      // Check if Ayrshare API key is configured
+      if (!process.env.AYRSHARE_API_KEY) {
+        return res.status(500).json({ 
+          message: "Ayrshare API key not configured. Please add AYRSHARE_API_KEY to environment variables." 
+        });
+      }
+
+      // Get history from Ayrshare
+      const ayrshareHistory = await ayrshareClient.getHistory(profileKey);
+
+      // Also get local post history for comparison
+      const userId = req.user.claims.sub;
+      const localPosts = await storage.getUserPosts(userId);
+
+      res.json({
+        success: true,
+        ayrshareHistory: ayrshareHistory.history || [],
+        localHistory: localPosts
+      });
+
+    } catch (error: any) {
+      console.error("Ayrshare history error:", error);
+      res.status(500).json({ 
+        message: error.message || "Failed to retrieve post history from Ayrshare" 
+      });
+    }
+  });
+
+  // POST /api/ayrshare/upload - Upload media to Ayrshare
+  app.post('/api/ayrshare/upload', isAuthenticated, upload.single('file'), async (req: any, res) => {
+    try {
+      if (!req.file) {
+        return res.status(400).json({ 
+          message: "No file uploaded. Please select an image or video file." 
+        });
+      }
+
+      // Check if Ayrshare API key is configured
+      if (!process.env.AYRSHARE_API_KEY) {
+        return res.status(500).json({ 
+          message: "Ayrshare API key not configured. Please add AYRSHARE_API_KEY to environment variables." 
+        });
+      }
+
+      // Validate file size (additional check)
+      if (req.file.size > 50 * 1024 * 1024) {
+        return res.status(400).json({ 
+          message: "File too large. Maximum size is 50MB." 
+        });
+      }
+
+      // Upload to Ayrshare
+      const uploadResponse = await ayrshareClient.uploadMedia(
+        req.file.buffer, 
+        req.file.originalname
+      );
+
+      if (uploadResponse.status === 'success' && uploadResponse.url) {
+        res.json({
+          success: true,
+          url: uploadResponse.url,
+          filename: req.file.originalname,
+          size: req.file.size,
+          mimetype: req.file.mimetype
+        });
+      } else {
+        res.status(500).json({ 
+          message: uploadResponse.error || "Failed to upload media to Ayrshare" 
+        });
+      }
+
+    } catch (error: any) {
+      console.error("Ayrshare upload error:", error);
+      res.status(500).json({ 
+        message: error.message || "Failed to upload media to Ayrshare" 
+      });
     }
   });
 

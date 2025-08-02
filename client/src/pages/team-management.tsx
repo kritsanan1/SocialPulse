@@ -35,7 +35,7 @@ export default function TeamManagement() {
     }
   }, [isAuthenticated, isLoading, toast]);
 
-  const { data: teamMembers, isLoading: isLoadingTeams } = useQuery({
+  const { data: teamMembers, isLoading: isLoadingTeams } = useQuery<any[]>({
     queryKey: ["/api/teams"],
     enabled: isAuthenticated,
   });

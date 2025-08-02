@@ -57,7 +57,12 @@ Preferred communication style: Simple, everyday language.
 - **Session Storage**: PostgreSQL with connect-pg-simple adapter
 
 ### Social Media Integration
-- **Ayrshare API**: Third-party service for cross-platform social media posting and scheduling
+- **Ayrshare API**: Comprehensive integration for cross-platform social media posting and scheduling
+  - Direct API integration using axios with proper validation and error handling
+  - Support for all major platforms: Twitter, Facebook, Instagram, LinkedIn, TikTok, Pinterest, Snapchat, YouTube, Reddit, Telegram
+  - Media upload functionality with 50MB file size limit and format validation
+  - Profile Key support for multi-user and team account management
+  - Post history tracking and analytics integration
 
 ### Frontend Libraries
 - **UI Components**: Radix UI ecosystem for accessible component primitives

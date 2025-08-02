@@ -31,6 +31,9 @@ export interface IStorage {
   getPost(id: string): Promise<Post | undefined>;
   updatePostStatus(id: string, status: string): Promise<void>;
   
+  // Post history operations
+  createPostHistory(history: { postId: string; status: string; response: any }): Promise<PostHistory>;
+  
   // Analytics operations
   createAnalytics(analytics: InsertAnalytics): Promise<Analytics>;
   getPostAnalytics(postId: string): Promise<Analytics[]>;
@@ -202,6 +205,15 @@ export class DatabaseStorage implements IStorage {
       .update(aiSuggestions)
       .set({ applied: true })
       .where(eq(aiSuggestions.id, id));
+  }
+
+  // Post history operations
+  async createPostHistory(historyData: { postId: string; status: string; response: any }): Promise<PostHistory> {
+    const [history] = await db
+      .insert(postHistory)
+      .values(historyData)
+      .returning();
+    return history;
   }
 }
 
