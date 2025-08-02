@@ -365,7 +365,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  const httpServer = createServer(app);
   // Register feature routes
   try {
     const { registerAdvancedFeatures } = require("./routes/advanced-features");
@@ -389,6 +388,44 @@ export async function registerRoutes(app: Express): Promise<Server> {
   } catch (error) {
     console.log("AI Content features not available");
   }
+
+  // Register new feature routes
+  try {
+    const { registerContentRecyclingRoutes } = require("./routes/content-recycling");
+    registerContentRecyclingRoutes(app);
+  } catch (error) {
+    console.log("Content recycling features not available");
+  }
+
+  try {
+    const { registerSentimentAnalysisRoutes } = require("./routes/sentiment-analysis");
+    registerSentimentAnalysisRoutes(app);
+  } catch (error) {
+    console.log("Sentiment analysis features not available");
+  }
+
+  try {
+    const { registerCompetitorIntelligenceRoutes } = require("./routes/competitor-intelligence");
+    registerCompetitorIntelligenceRoutes(app);
+  } catch (error) {
+    console.log("Competitor intelligence features not available");
+  }
+
+  try {
+    const { registerAutoPilotRoutes } = require("./routes/autopilot");
+    registerAutoPilotRoutes(app);
+  } catch (error) {
+    console.log("Auto pilot features not available");
+  }
+
+  try {
+    const { registerAdvancedAnalyticsRoutes } = require("./routes/advanced-analytics");
+    registerAdvancedAnalyticsRoutes(app);
+  } catch (error) {
+    console.log("Advanced analytics features not available");
+  }
+
+  const httpServer = createServer(app);
 
   // Schedule cleanup endpoint
   app.get("/api/posts/scheduled", isAuthenticated, async (req, res) => {
@@ -453,20 +490,3 @@ async function generateAISuggestions(userId: string, content: string): Promise<A
 
   return suggestions;
 }
-import { registerAIContentRoutes } from "./routes/ai-content.js";
-import { registerAdvancedFeatures } from "./routes/advanced-features.js";
-import { registerStripeRoutes } from "./routes/stripe.js";
-import { registerContentRecyclingRoutes } from "./routes/content-recycling.js";
-import { registerSentimentAnalysisRoutes } from "./routes/sentiment-analysis.js";
-import { registerCompetitorIntelligenceRoutes } from "./routes/competitor-intelligence.js";
-import { registerAutoPilotRoutes } from "./routes/autopilot.js";
-import { registerAdvancedAnalyticsRoutes } from "./routes/advanced-analytics.js";
-// Register feature routes
-registerAIContentRoutes(app);
-registerAdvancedFeatures(app);
-registerStripeRoutes(app);
-registerContentRecyclingRoutes(app);
-registerSentimentAnalysisRoutes(app);
-registerCompetitorIntelligenceRoutes(app);
-registerAutoPilotRoutes(app);
-registerAdvancedAnalyticsRoutes(app);
