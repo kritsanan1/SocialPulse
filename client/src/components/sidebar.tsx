@@ -16,7 +16,8 @@ import {
   Sparkles,
   Image,
   RefreshCw,
-  Heart
+  Heart,
+  CheckCircle
 } from "lucide-react";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
 
