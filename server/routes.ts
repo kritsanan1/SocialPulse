@@ -420,7 +420,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   try {
     const { registerAdvancedAnalyticsRoutes } = require("./routes/advanced-analytics");
+    const { setupPerformanceRoutes } = require("./routes/performance");
     registerAdvancedAnalyticsRoutes(app);
+    setupPerformanceRoutes(app);
   } catch (error) {
     console.log("Advanced analytics features not available");
   }

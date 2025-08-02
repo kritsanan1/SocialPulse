@@ -18,29 +18,38 @@ import Pricing from "./pages/pricing";
 import Billing from "./pages/billing";
 import Success from "./pages/success";
 import NotFound from "./pages/not-found";
+import React, { Suspense } from 'react';
+
+const PageLoader = () => <p>Loading...</p>;
+
+// Placeholder component for Performance route, replace with actual implementation
+const Performance = () => <p>Performance Dashboard</p>;
 
 function Router() {
   const { isAuthenticated, isLoading, user } = useAuth();
 
   return (
-    <Switch>
-      {isLoading || !isAuthenticated ? (
-        <Route path="/" component={Landing} />
-      ) : (
-        <>
-          <Route path="/" component={Home} />
-          <Route path="/team" component={TeamManagement} />
-          <Route path="/calendar" component={CalendarPage} />
-          <Route path="/ai-insights" component={AIInsightsPage} />
-          <Route path="/pricing" component={Pricing} />
-          <Route path="/billing" component={Billing} />
-          <Route path="/success" component={Success} />
-          <Route path="/ai-content-generator" component={AIContentGenerator} />
-          <Route path="/visual-content-creator" component={VisualContentCreator} />
-        </>
-      )}
-      <Route component={NotFound} />
-    </Switch>
+    <Suspense fallback={<PageLoader />}>
+      <Switch>
+        {isLoading || !isAuthenticated ? (
+          <Route path="/" component={Landing} />
+        ) : (
+          <>
+            <Route path="/" component={Home} />
+            <Route path="/team" component={TeamManagement} />
+            <Route path="/calendar" component={CalendarPage} />
+            <Route path="/ai-insights" component={AIInsightsPage} />
+            <Route path="/pricing" component={Pricing} />
+            <Route path="/billing" component={Billing} />
+            <Route path="/success" component={Success} />
+            <Route path="/performance" component={Performance} />
+            <Route path="/ai-content-generator" component={AIContentGenerator} />
+            <Route path="/visual-content-creator" component={VisualContentCreator} />
+          </>
+        )}
+        <Route component={NotFound} />
+      </Switch>
+    </Suspense>
   );
 }
 
