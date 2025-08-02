@@ -1,259 +1,512 @@
-import { useAuth } from "@/hooks/useAuth";
-import { Sidebar } from "@/components/sidebar";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Badge } from "@/components/ui/badge";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { apiRequest } from "@/lib/queryClient";
-import { useToast } from "@/hooks/use-toast";
-import { useState, useEffect } from "react";
-import { isUnauthorizedError } from "@/lib/authUtils";
-import { Users, Plus, Crown, Shield, User } from "lucide-react";
+
+import React, { useState, useEffect } from 'react';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/card';
+import { Button } from '../components/ui/button';
+import { Input } from '../components/ui/input';
+import { Label } from '../components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../components/ui/select';
+import { Badge } from '../components/ui/badge';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '../components/ui/dialog';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '../components/ui/tabs';
+import { Avatar, AvatarFallback, AvatarImage } from '../components/ui/avatar';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../components/ui/table';
+import { Users, UserPlus, Settings, Crown, Shield, User, MoreHorizontal, Mail, Calendar } from 'lucide-react';
+import { useToast } from '../hooks/use-toast';
+import { format } from 'date-fns';
+
+interface TeamMember {
+  id: string;
+  name: string;
+  email: string;
+  role: 'owner' | 'admin' | 'editor' | 'viewer';
+  status: 'active' | 'pending' | 'inactive';
+  avatar_url?: string;
+  joined_at: Date;
+  last_active: Date;
+  permissions: string[];
+}
+
+interface TeamInvite {
+  id: string;
+  email: string;
+  role: 'admin' | 'editor' | 'viewer';
+  invited_by: string;
+  invited_at: Date;
+  expires_at: Date;
+  status: 'pending' | 'accepted' | 'expired';
+}
 
 export default function TeamManagement() {
-  const { user, isAuthenticated, isLoading } = useAuth();
+  const [teamMembers, setTeamMembers] = useState<TeamMember[]>([]);
+  const [teamInvites, setTeamInvites] = useState<TeamInvite[]>([]);
+  const [isInviteDialogOpen, setIsInviteDialogOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
-  const queryClient = useQueryClient();
-  const [newMemberEmail, setNewMemberEmail] = useState("");
-  const [newMemberRole, setNewMemberRole] = useState("member");
 
-  // Redirect if not authenticated
-  useEffect(() => {
-    if (!isLoading && !isAuthenticated) {
-      toast({
-        title: "Unauthorized",
-        description: "You are logged out. Logging in again...",
-        variant: "destructive",
-      });
-      setTimeout(() => {
-        window.location.href = "/api/login";
-      }, 500);
-      return;
-    }
-  }, [isAuthenticated, isLoading, toast]);
-
-  const { data: teamMembers, isLoading: isLoadingTeams } = useQuery<any[]>({
-    queryKey: ["/api/teams"],
-    enabled: isAuthenticated,
+  // Form state
+  const [inviteForm, setInviteForm] = useState({
+    email: '',
+    role: 'viewer' as 'admin' | 'editor' | 'viewer',
+    message: ''
   });
 
-  const addMemberMutation = useMutation({
-    mutationFn: async (data: { teamMemberId: string; role: string }) => {
-      await apiRequest("POST", "/api/teams", data);
+  const roles = [
+    {
+      id: 'owner',
+      name: 'Owner',
+      description: 'Full access to everything including billing',
+      icon: Crown,
+      color: 'text-yellow-600',
+      permissions: ['all']
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/teams"] });
-      setNewMemberEmail("");
-      setNewMemberRole("member");
-      toast({
-        title: "Success",
-        description: "Team member added successfully",
-      });
+    {
+      id: 'admin',
+      name: 'Admin',
+      description: 'Manage team, settings, and all content',
+      icon: Shield,
+      color: 'text-blue-600',
+      permissions: ['manage_team', 'manage_content', 'view_analytics', 'manage_settings']
     },
-    onError: (error) => {
-      if (isUnauthorizedError(error)) {
-        toast({
-          title: "Unauthorized",
-          description: "You are logged out. Logging in again...",
-          variant: "destructive",
-        });
-        setTimeout(() => {
-          window.location.href = "/api/login";
-        }, 500);
-        return;
+    {
+      id: 'editor',
+      name: 'Editor',
+      description: 'Create and manage content, view analytics',
+      icon: User,
+      color: 'text-green-600',
+      permissions: ['manage_content', 'view_analytics']
+    },
+    {
+      id: 'viewer',
+      name: 'Viewer',
+      description: 'View content and basic analytics only',
+      icon: User,
+      color: 'text-gray-600',
+      permissions: ['view_content', 'view_analytics']
+    }
+  ];
+
+  useEffect(() => {
+    fetchTeamData();
+  }, []);
+
+  const fetchTeamData = async () => {
+    try {
+      const [membersResponse, invitesResponse] = await Promise.all([
+        fetch('/api/team/members'),
+        fetch('/api/team/invites')
+      ]);
+
+      if (membersResponse.ok) {
+        const membersData = await membersResponse.json();
+        setTeamMembers(membersData.members.map((member: any) => ({
+          ...member,
+          joined_at: new Date(member.joined_at),
+          last_active: new Date(member.last_active)
+        })));
       }
+
+      if (invitesResponse.ok) {
+        const invitesData = await invitesResponse.json();
+        setTeamInvites(invitesData.invites.map((invite: any) => ({
+          ...invite,
+          invited_at: new Date(invite.invited_at),
+          expires_at: new Date(invite.expires_at)
+        })));
+      }
+    } catch (error) {
+      console.error('Failed to fetch team data:', error);
+    }
+  };
+
+  const handleSendInvite = async () => {
+    if (!inviteForm.email.trim()) {
       toast({
         title: "Error",
-        description: "Failed to add team member",
-        variant: "destructive",
+        description: "Please enter an email address",
+        variant: "destructive"
       });
-    },
-  });
+      return;
+    }
 
-  const handleAddMember = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!newMemberEmail.trim()) return;
-    
-    // In a real implementation, you'd look up the user by email
-    // For now, we'll use the email as the teamMemberId
-    addMemberMutation.mutate({
-      teamMemberId: newMemberEmail,
-      role: newMemberRole,
-    });
-  };
+    setIsLoading(true);
 
-  const getRoleIcon = (role: string) => {
-    switch (role) {
-      case "owner":
-        return <Crown className="w-4 h-4 text-yellow-600" />;
-      case "admin":
-        return <Shield className="w-4 h-4 text-blue-600" />;
-      default:
-        return <User className="w-4 h-4 text-gray-600" />;
+    try {
+      const response = await fetch('/api/team/invite', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(inviteForm)
+      });
+
+      if (!response.ok) throw new Error('Failed to send invite');
+
+      toast({
+        title: "Success",
+        description: "Invitation sent successfully",
+      });
+
+      setIsInviteDialogOpen(false);
+      setInviteForm({ email: '', role: 'viewer', message: '' });
+      fetchTeamData();
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to send invitation",
+        variant: "destructive"
+      });
+    } finally {
+      setIsLoading(false);
     }
   };
 
-  const getRoleBadgeVariant = (role: string) => {
-    switch (role) {
-      case "owner":
-        return "default";
-      case "admin":
-        return "secondary";
-      default:
-        return "outline";
+  const handleUpdateMemberRole = async (memberId: string, newRole: string) => {
+    try {
+      const response = await fetch(`/api/team/members/${memberId}/role`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ role: newRole })
+      });
+
+      if (!response.ok) throw new Error('Failed to update role');
+
+      toast({
+        title: "Success",
+        description: "Member role updated successfully",
+      });
+
+      fetchTeamData();
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to update member role",
+        variant: "destructive"
+      });
     }
   };
 
-  if (isLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary"></div>
-      </div>
-    );
-  }
+  const handleRemoveMember = async (memberId: string) => {
+    try {
+      const response = await fetch(`/api/team/members/${memberId}`, {
+        method: 'DELETE'
+      });
+
+      if (!response.ok) throw new Error('Failed to remove member');
+
+      toast({
+        title: "Success",
+        description: "Member removed successfully",
+      });
+
+      fetchTeamData();
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to remove member",
+        variant: "destructive"
+      });
+    }
+  };
+
+  const handleCancelInvite = async (inviteId: string) => {
+    try {
+      const response = await fetch(`/api/team/invites/${inviteId}`, {
+        method: 'DELETE'
+      });
+
+      if (!response.ok) throw new Error('Failed to cancel invite');
+
+      toast({
+        title: "Success",
+        description: "Invitation cancelled",
+      });
+
+      fetchTeamData();
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to cancel invitation",
+        variant: "destructive"
+      });
+    }
+  };
+
+  const getRoleInfo = (roleId: string) => {
+    return roles.find(role => role.id === roleId) || roles[3]; // Default to viewer
+  };
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'active': return 'bg-green-500';
+      case 'pending': return 'bg-yellow-500';
+      case 'inactive': return 'bg-gray-500';
+      default: return 'bg-gray-500';
+    }
+  };
 
   return (
-    <div className="flex h-screen bg-gray-50">
-      {/* Sidebar */}
-      <div className="hidden lg:flex">
-        <Sidebar />
+    <div className="p-6 max-w-7xl mx-auto space-y-6">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <Users className="h-6 w-6 text-blue-500" />
+          <h1 className="text-2xl font-bold">Team Management</h1>
+        </div>
+        
+        <Dialog open={isInviteDialogOpen} onOpenChange={setIsInviteDialogOpen}>
+          <DialogTrigger asChild>
+            <Button>
+              <UserPlus className="h-4 w-4 mr-2" />
+              Invite Member
+            </Button>
+          </DialogTrigger>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Invite Team Member</DialogTitle>
+              <DialogDescription>
+                Send an invitation to join your team
+              </DialogDescription>
+            </DialogHeader>
+            
+            <div className="space-y-4">
+              <div>
+                <Label htmlFor="email">Email Address</Label>
+                <Input
+                  id="email"
+                  type="email"
+                  placeholder="colleague@company.com"
+                  value={inviteForm.email}
+                  onChange={(e) => setInviteForm(prev => ({ ...prev, email: e.target.value }))}
+                />
+              </div>
+
+              <div>
+                <Label htmlFor="role">Role</Label>
+                <Select value={inviteForm.role} onValueChange={(value: any) => setInviteForm(prev => ({ ...prev, role: value }))}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {roles.slice(1).map(role => ( // Exclude owner role
+                      <SelectItem key={role.id} value={role.id}>
+                        <div className="flex items-center gap-2">
+                          <role.icon className={`h-4 w-4 ${role.color}`} />
+                          <div>
+                            <div className="font-medium">{role.name}</div>
+                            <div className="text-xs text-muted-foreground">{role.description}</div>
+                          </div>
+                        </div>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div>
+                <Label htmlFor="message">Personal Message (optional)</Label>
+                <Input
+                  id="message"
+                  placeholder="Welcome to the team!"
+                  value={inviteForm.message}
+                  onChange={(e) => setInviteForm(prev => ({ ...prev, message: e.target.value }))}
+                />
+              </div>
+
+              <div className="flex gap-3">
+                <Button onClick={() => setIsInviteDialogOpen(false)} variant="outline">
+                  Cancel
+                </Button>
+                <Button onClick={handleSendInvite} disabled={isLoading}>
+                  {isLoading ? 'Sending...' : 'Send Invitation'}
+                </Button>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
       </div>
 
-      {/* Main Content */}
-      <div className="flex-1 flex flex-col min-w-0">
-        <div className="p-6">
-          {/* Header */}
-          <div className="mb-8">
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">Team Management</h1>
-            <p className="text-gray-600">Manage your team members and their roles</p>
-          </div>
+      <Tabs defaultValue="members" className="space-y-6">
+        <TabsList>
+          <TabsTrigger value="members">Team Members</TabsTrigger>
+          <TabsTrigger value="invites">Pending Invites</TabsTrigger>
+          <TabsTrigger value="roles">Roles & Permissions</TabsTrigger>
+        </TabsList>
 
-          <div className="grid lg:grid-cols-2 gap-6">
-            {/* Add New Member */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center space-x-2">
-                  <Plus className="w-5 h-5" />
-                  <span>Add Team Member</span>
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <form onSubmit={handleAddMember} className="space-y-4">
-                  <div>
-                    <Label htmlFor="email">Email Address</Label>
-                    <Input
-                      id="email"
-                      type="email"
-                      placeholder="Enter team member's email"
-                      value={newMemberEmail}
-                      onChange={(e) => setNewMemberEmail(e.target.value)}
-                      required
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="role">Role</Label>
-                    <Select value={newMemberRole} onValueChange={setNewMemberRole}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select a role" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="member">Member</SelectItem>
-                        <SelectItem value="admin">Admin</SelectItem>
-                        <SelectItem value="owner">Owner</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <Button 
-                    type="submit" 
-                    className="w-full"
-                    disabled={addMemberMutation.isPending || !newMemberEmail.trim()}
-                  >
-                    {addMemberMutation.isPending ? "Adding..." : "Add Member"}
-                  </Button>
-                </form>
-              </CardContent>
-            </Card>
-
-            {/* Team Overview */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center space-x-2">
-                  <Users className="w-5 h-5" />
-                  <span>Team Overview</span>
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  <div className="grid grid-cols-3 gap-4 text-center">
-                    <div className="p-4 bg-blue-50 rounded-lg">
-                      <div className="text-2xl font-bold text-blue-600">
-                        {teamMembers?.length || 0}
-                      </div>
-                      <div className="text-sm text-blue-800">Total Members</div>
-                    </div>
-                    <div className="p-4 bg-green-50 rounded-lg">
-                      <div className="text-2xl font-bold text-green-600">
-                        {teamMembers?.filter((m: any) => m.role === "admin").length || 0}
-                      </div>
-                      <div className="text-sm text-green-800">Admins</div>
-                    </div>
-                    <div className="p-4 bg-purple-50 rounded-lg">
-                      <div className="text-2xl font-bold text-purple-600">
-                        {teamMembers?.filter((m: any) => m.role === "member").length || 0}
-                      </div>
-                      <div className="text-sm text-purple-800">Members</div>
-                    </div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* Team Members List */}
-          <Card className="mt-6">
+        <TabsContent value="members">
+          <Card>
             <CardHeader>
-              <CardTitle>Team Members</CardTitle>
+              <CardTitle>Team Members ({teamMembers.length})</CardTitle>
+              <CardDescription>
+                Manage your team members and their access levels
+              </CardDescription>
             </CardHeader>
             <CardContent>
-              {isLoadingTeams ? (
-                <div className="flex items-center justify-center py-8">
-                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-                </div>
-              ) : teamMembers?.length === 0 ? (
-                <div className="text-center py-8 text-gray-500">
-                  <Users className="w-12 h-12 mx-auto mb-4 text-gray-400" />
-                  <p>No team members yet. Add your first team member above.</p>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Member</TableHead>
+                    <TableHead>Role</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead>Last Active</TableHead>
+                    <TableHead>Actions</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {teamMembers.map((member) => {
+                    const roleInfo = getRoleInfo(member.role);
+                    return (
+                      <TableRow key={member.id}>
+                        <TableCell>
+                          <div className="flex items-center gap-3">
+                            <Avatar>
+                              <AvatarImage src={member.avatar_url} />
+                              <AvatarFallback>
+                                {member.name.split(' ').map(n => n[0]).join('')}
+                              </AvatarFallback>
+                            </Avatar>
+                            <div>
+                              <div className="font-medium">{member.name}</div>
+                              <div className="text-sm text-muted-foreground">{member.email}</div>
+                            </div>
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex items-center gap-2">
+                            <roleInfo.icon className={`h-4 w-4 ${roleInfo.color}`} />
+                            <span className="font-medium">{roleInfo.name}</span>
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <Badge variant="secondary" className={getStatusColor(member.status)}>
+                            {member.status}
+                          </Badge>
+                        </TableCell>
+                        <TableCell>
+                          <div className="text-sm">
+                            {format(member.last_active, 'MMM d, yyyy')}
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          {member.role !== 'owner' && (
+                            <div className="flex gap-2">
+                              <Select
+                                value={member.role}
+                                onValueChange={(value) => handleUpdateMemberRole(member.id, value)}
+                              >
+                                <SelectTrigger className="w-32">
+                                  <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  {roles.slice(1).map(role => (
+                                    <SelectItem key={role.id} value={role.id}>
+                                      {role.name}
+                                    </SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => handleRemoveMember(member.id)}
+                              >
+                                Remove
+                              </Button>
+                            </div>
+                          )}
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })}
+                </TableBody>
+              </Table>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="invites">
+          <Card>
+            <CardHeader>
+              <CardTitle>Pending Invitations ({teamInvites.length})</CardTitle>
+              <CardDescription>
+                Manage outstanding team invitations
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              {teamInvites.length === 0 ? (
+                <div className="text-center py-8 text-muted-foreground">
+                  <Mail className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                  <p>No pending invitations</p>
                 </div>
               ) : (
-                <div className="space-y-4">
-                  {teamMembers?.map((member: any) => (
-                    <div key={member.id} className="flex items-center justify-between p-4 border border-gray-200 rounded-lg">
-                      <div className="flex items-center space-x-4">
-                        <div className="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center">
-                          <User className="w-5 h-5 text-gray-600" />
-                        </div>
-                        <div>
-                          <p className="font-medium text-gray-900">{member.teamMemberId}</p>
-                          <p className="text-sm text-gray-500">Added {new Date(member.createdAt).toLocaleDateString()}</p>
-                        </div>
-                      </div>
-                      <div className="flex items-center space-x-2">
-                        {getRoleIcon(member.role)}
-                        <Badge variant={getRoleBadgeVariant(member.role)}>
-                          {member.role}
-                        </Badge>
-                      </div>
-                    </div>
-                  ))}
-                </div>
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Email</TableHead>
+                      <TableHead>Role</TableHead>
+                      <TableHead>Invited</TableHead>
+                      <TableHead>Expires</TableHead>
+                      <TableHead>Actions</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {teamInvites.map((invite) => {
+                      const roleInfo = getRoleInfo(invite.role);
+                      return (
+                        <TableRow key={invite.id}>
+                          <TableCell>{invite.email}</TableCell>
+                          <TableCell>
+                            <div className="flex items-center gap-2">
+                              <roleInfo.icon className={`h-4 w-4 ${roleInfo.color}`} />
+                              <span>{roleInfo.name}</span>
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            {format(invite.invited_at, 'MMM d, yyyy')}
+                          </TableCell>
+                          <TableCell>
+                            {format(invite.expires_at, 'MMM d, yyyy')}
+                          </TableCell>
+                          <TableCell>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => handleCancelInvite(invite.id)}
+                            >
+                              Cancel
+                            </Button>
+                          </TableCell>
+                        </TableRow>
+                      );
+                    })}
+                  </TableBody>
+                </Table>
               )}
             </CardContent>
           </Card>
-        </div>
-      </div>
+        </TabsContent>
+
+        <TabsContent value="roles">
+          <div className="grid gap-4">
+            {roles.map((role) => (
+              <Card key={role.id}>
+                <CardContent className="pt-6">
+                  <div className="flex items-start gap-4">
+                    <role.icon className={`h-8 w-8 ${role.color}`} />
+                    <div className="flex-1">
+                      <h3 className="text-lg font-semibold">{role.name}</h3>
+                      <p className="text-muted-foreground mb-3">{role.description}</p>
+                      <div className="flex flex-wrap gap-2">
+                        {role.permissions.map((permission) => (
+                          <Badge key={permission} variant="outline">
+                            {permission.replace('_', ' ')}
+                          </Badge>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }

@@ -7,8 +7,8 @@ import { ThemeProvider } from "@/components/theme-provider";
 import { useAuth } from "@/hooks/useAuth";
 import Home from "./pages/home";
 import CalendarPage from "./pages/calendar";
+import AIContentGenerator from "./pages/ai-content-generator";
 import AIInsightsPage from "@/pages/ai-insights";
-import AIContentGenerator from "@/pages/ai-content-generator";
 import VisualContentCreator from "@/pages/visual-content-creator";
 import ContentRecycling from "@/pages/content-recycling";
 import SentimentDashboard from "@/pages/sentiment-dashboard";
@@ -36,7 +36,7 @@ function Router() {
         ) : (
           <>
             <Route path="/" component={Home} />
-            <Route path="/team" component={TeamManagement} />
+            <Route path="/team-management" component={TeamManagement} />
             <Route path="/calendar" component={CalendarPage} />
             <Route path="/ai-insights" component={AIInsightsPage} />
             <Route path="/pricing" component={Pricing} />

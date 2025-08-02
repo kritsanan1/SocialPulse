@@ -27,11 +27,10 @@ export function Sidebar() {
 
   const navigation = [
     { name: "Dashboard", href: "/", icon: Home, current: location === "/" },
-    { name: "Create Post", href: "/create", icon: PlusCircle, current: location === "/create" },
-    { name: "Analytics", href: "/analytics", icon: BarChart3, current: location === "/analytics" },
-    { name: "Calendar", href: "/calendar", icon: Calendar, current: location === "/calendar" },
+    { name: "AI Content Generator", href: "/ai-content-generator", icon: Sparkles, current: location === "/ai-content-generator" },
     { name: "AI Insights", href: "/ai-insights", icon: Lightbulb, current: location === "/ai-insights" },
-    { name: "Team Management", href: "/team", icon: Users, current: location === "/team" },
+    { name: "Calendar", href: "/calendar", icon: Calendar, current: location === "/calendar" },
+    { name: "Team Management", href: "/team-management", icon: Users, current: location === "/team-management" },
     { name: "Billing", href: "/billing", icon: CreditCard, current: location === "/billing" },
     { name: "Pricing", href: "/pricing", icon: DollarSign, current: location === "/pricing" },
     { name: "Settings", href: "/settings", icon: Settings, current: location === "/settings" },
