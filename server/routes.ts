@@ -48,7 +48,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const userId = req.user.claims.sub;
       const postData = insertPostSchema.parse(req.body);
-      
+
       // Validate schedule date is in the future
       const scheduleDate = new Date(postData.scheduleDate);
       if (scheduleDate <= new Date()) {
@@ -56,17 +56,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       const post = await storage.createPost({ ...postData, userId });
-      
+
       // Track usage
       await storage.incrementUsage(userId, 'posts');
-      
+
       // Here you would integrate with Ayrshare API
       // For now, we'll simulate the API call
       try {
         // Simulate Ayrshare API call
         console.log("Scheduling post with Ayrshare:", post);
         // await ayrshareClient.post(post);
-        
+
         await storage.updatePostStatus(post.id, "scheduled");
       } catch (ayrshareError) {
         console.error("Ayrshare API error:", ayrshareError);
@@ -130,10 +130,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const userId = req.user.claims.sub;
       const suggestionData = insertAiSuggestionSchema.parse(req.body);
-      
+
       // Generate AI suggestions based on content and historical data
       const suggestions = await generateAISuggestions(userId, suggestionData.suggestionContent);
-      
+
       const createdSuggestions = [];
       for (const suggestion of suggestions) {
         const created = await storage.createAiSuggestion({
@@ -142,7 +142,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
         createdSuggestions.push(created);
       }
-      
+
       res.json(createdSuggestions);
     } catch (error) {
       console.error("Error creating AI suggestions:", error);
@@ -167,10 +167,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const userId = req.user.claims.sub;
       const teamData = insertTeamSchema.parse(req.body);
       const team = await storage.createTeamMember({ ...teamData, userId });
-      
+
       // Track usage
       await storage.incrementUsage(userId, 'teamMembers');
-      
+
       res.json(team);
     } catch (error) {
       console.error("Error creating team member:", error);
@@ -195,10 +195,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post('/api/ayrshare/post', isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user.claims.sub;
-      
+
       // Validate required fields
       const { post, platforms, mediaUrls, scheduleDate, profileKey } = req.body;
-      
+
       if (!post || !platforms || !Array.isArray(platforms) || platforms.length === 0) {
         return res.status(400).json({ 
           message: "Post content and platforms array are required" 
@@ -380,6 +380,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
     registerStripeRoutes(app);
   } catch (error) {
     console.log("Stripe features not available");
+  }
+
+  // Register AI Content routes
+  try {
+    const { registerAIContentRoutes } = require("./routes/ai-content");
+    registerAIContentRoutes(app);
+  } catch (error) {
+    console.log("AI Content features not available");
   }
 
   // Schedule cleanup endpoint

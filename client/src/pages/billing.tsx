@@ -265,7 +265,7 @@ export default function Billing() {
                             <a href={record.invoiceUrl} target="_blank" rel="noopener noreferrer">
                               <Download className="w-4 h-4" />
                             </a>
-                          </a>
+                          </Button>
                         )}
                       </TableCell>
                     </TableRow>

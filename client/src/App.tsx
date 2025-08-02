@@ -13,6 +13,8 @@ import Landing from "./pages/landing";
 import Pricing from "./pages/pricing";
 import Billing from "./pages/billing";
 import Success from "./pages/success";
+import AIContentGenerator from "./pages/ai-content-generator";
+import VisualContentCreator from "./pages/visual-content-creator";
 import NotFound from "./pages/not-found";
 
 function Router() {
@@ -31,6 +33,8 @@ function Router() {
           <Route path="/pricing" component={Pricing} />
           <Route path="/billing" component={Billing} />
           <Route path="/success" component={Success} />
+          <Route path="/ai-content-generator" component={AIContentGenerator} />
+          <Route path="/visual-content-creator" component={VisualContentCreator} />
         </>
       )}
       <Route component={NotFound} />

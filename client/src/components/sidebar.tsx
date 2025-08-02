@@ -12,7 +12,9 @@ import {
   Zap,
   Calendar,
   CreditCard,
-  DollarSign
+  DollarSign,
+  Sparkles,
+  Image
 } from "lucide-react";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
 
@@ -70,6 +72,39 @@ export function Sidebar() {
             </Link>
           );
         })}
+        <Link href="/ai-insights">
+              <div className={cn(
+                  "flex items-center space-x-3 px-4 py-3 rounded-lg font-medium transition-colors cursor-pointer",
+                   location === "/ai-insights"
+                    ? "text-blue-600 bg-blue-50 dark:text-blue-400 dark:bg-blue-900"
+                    : "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+                )}>
+                <Lightbulb className="w-5 h-5" />
+                <span>AI Insights</span>
+              </div>
+            </Link>
+        <Link href="/ai-content-generator">
+              <div className={cn(
+                  "flex items-center space-x-3 px-4 py-3 rounded-lg font-medium transition-colors cursor-pointer",
+                   location === "/ai-content-generator"
+                    ? "text-blue-600 bg-blue-50 dark:text-blue-400 dark:bg-blue-900"
+                    : "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+                )}>
+                <Sparkles className="w-5 h-5" />
+                <span>AI Content Generator</span>
+              </div>
+            </Link>
+            <Link href="/visual-content-creator">
+              <div className={cn(
+                  "flex items-center space-x-3 px-4 py-3 rounded-lg font-medium transition-colors cursor-pointer",
+                   location === "/visual-content-creator"
+                    ? "text-blue-600 bg-blue-50 dark:text-blue-400 dark:bg-blue-900"
+                    : "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+                )}>
+                <Image className="w-5 h-5" />
+                <span>Visual Creator</span>
+              </div>
+            </Link>
       </nav>
 
       {/* User Profile */}
