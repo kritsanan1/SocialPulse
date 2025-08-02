@@ -2,6 +2,7 @@
 # SocialAI Pro - Advanced AI Social Media Manager
 
 [![screencapture-b548dfde-05ba-4cad-8bc8-7f36ea5ceb6f-00-10cdmb93wl7wd-kirk-replit-dev-2025-08-02-22-27.png](https://i.postimg.cc/pVsz3vdp/screencapture-b548dfde-05ba-4cad-8bc8-7f36ea5ceb6f-00-10cdmb93wl7wd-kirk-replit-dev-2025-08-02-22-27.png)](https://postimg.cc/RqnWnjKB)
+
 [![screencapture-b548dfde-05ba-4cad-8bc8-7f36ea5ceb6f-00-10cdmb93wl7wd-kirk-replit-dev-ai-insights-2025.png](https://i.postimg.cc/HL1ybs6P/screencapture-b548dfde-05ba-4cad-8bc8-7f36ea5ceb6f-00-10cdmb93wl7wd-kirk-replit-dev-ai-insights-2025.png)](https://postimg.cc/DS50TFkq)
 
 
